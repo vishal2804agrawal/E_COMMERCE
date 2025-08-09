@@ -3,10 +3,10 @@ const app = express();
 const path = require("path");
 const mongoose = require("mongoose");
 const seedDB = require("./seed");
-const productRoutes = require("./routes/product");
 const ejsMate = require("ejs-mate");
 const methodOverride = require("method-override");
-
+const productRoutes = require("./routes/product");
+const reviewRoutes = require("./routes/review");
 mongoose
   .connect("mongodb://127.0.0.1:27017/shopping-vishal-app")
   .then(() => {
@@ -28,7 +28,8 @@ app.use(methodOverride("_method"));
 //seedDB();
 
 app.use(productRoutes); //so that harr incoming request ke liye path check kiya jaae
+app.use(reviewRoutes);
 
-app.listen(8080, () => {
-  console.log("server connected at port 8080");
+app.listen(5030, () => {
+  console.log("server connected at port 5030");
 });

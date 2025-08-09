@@ -36,10 +36,10 @@ const products = [
 ];
 
 async function seedDB() {
-  //await Product.deleteMany({}); // optional
+  await Product.deleteMany({}); // optional
   await Product.insertMany(products);
   console.log("Data seeded successfully");
-  // mongoose.connection.close(); // connection band karna mat bhoolna
+  //  mongoose.connection.close(); // connection band karna mat bhoolna
 }
 
 module.exports = seedDB;
