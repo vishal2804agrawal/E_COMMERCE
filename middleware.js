@@ -8,7 +8,7 @@ const validateProduct = (req, res, next) => {
   }
   next(); // validation pass -> agla middleware/route handler chalao
 };
-const validateReview = () => {
+const validateReview = (req, res, next) => {
   const { rating, comment } = req.body;
   const { error } = productSchema.validate({ rating, comment });
   if (error) {
@@ -17,4 +17,11 @@ const validateReview = () => {
   next();
 };
 
-module.exports = { validateReview, validateProduct };
+const isLoggedIn = (req, res, next) => {
+  if (!req.isAuthenticated()) {
+    req.flash("error", "Please login first");
+    return res.redirect("/login");
+  }
+  next();
+};
+module.exports = { isLoggedIn, validateReview, validateProduct };

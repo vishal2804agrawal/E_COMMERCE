@@ -2,10 +2,10 @@ const express = require("express");
 const Product = require("../models/Product");
 const Review = require("../models/Review");
 const router = express.Router(); //mini instance
-const { validateProduct } = require("../middleware");
+const { validateProduct, isLoggedIn } = require("../middleware");
 
 // to show all the products
-router.get("/products", async (req, res) => {
+router.get("/products", isLoggedIn, async (req, res) => {
   try {
     let products = await Product.find({});
     res.render("products/index", { products });
@@ -15,7 +15,7 @@ router.get("/products", async (req, res) => {
 });
 
 // to show the form for new product
-router.get("/product/new", (req, res) => {
+router.get("/product/new", isLoggedIn, (req, res) => {
   try {
     res.render("products/new");
   } catch (e) {
@@ -24,11 +24,12 @@ router.get("/product/new", (req, res) => {
 });
 
 // to actually add the product
-router.post("/products", validateProduct, async (req, res) => {
+router.post("/products", isLoggedIn, validateProduct, async (req, res) => {
   try {
     let { name, img, price, desc } = req.body;
 
     await Product.create({ name, img, price, desc });
+    req.flash("success", "Product added successfully"); // success key isliye likhi kyu ki apne middleware mai bhi seccess sai key banai hai
     res.redirect("/products");
   } catch (e) {
     res.status(500).render("error", { err: e.message });
@@ -36,18 +37,18 @@ router.post("/products", validateProduct, async (req, res) => {
 });
 
 // to show a particular product
-router.get("/products/:id", async (req, res) => {
+router.get("/products/:id", isLoggedIn, async (req, res) => {
   try {
     let { id } = req.params;
     let foundProduct = await Product.findById(id).populate("reviews");
-    res.render("products/show", { foundProduct });
+    res.render("products/show", { foundProduct, msg: req.flash("msg") });
   } catch (e) {
     res.status(500).render("error", { err: e.message });
   }
 });
 
 // form to edit the product
-router.get("/products/:id/edit", async (req, res) => {
+router.get("/products/:id/edit", isLoggedIn, async (req, res) => {
   try {
     let { id } = req.params;
     let foundProduct = await Product.findById(id);
@@ -57,18 +58,19 @@ router.get("/products/:id/edit", async (req, res) => {
   }
 });
 
-// to actually the data in db
-router.patch("/products/:id", async (req, res) => {
+// to actually edit the data in db
+router.patch("/products/:id", isLoggedIn, validateProduct, async (req, res) => {
   try {
     let { id } = req.params;
     let { name, img, price, desc } = req.body;
     await Product.findByIdAndUpdate(id, { name, img, price, desc });
+    req.flash("success", "Product edited successfully");
     res.redirect(`/products/${id}`);
   } catch (e) {
     res.status(500).render("error", { err: e.message });
   }
 });
-router.delete("/products/:id", async (req, res) => {
+router.delete("/products/:id", isLoggedIn, async (req, res) => {
   try {
     let { id } = req.params;
     const product = await Product.findById(id);
@@ -78,6 +80,7 @@ router.delete("/products/:id", async (req, res) => {
     // }
 
     await Product.findByIdAndDelete(id);
+    req.flash("success", "Product deleted successfully");
     res.redirect("/products");
   } catch (e) {
     res.status(500).render("error", { err: e.message });
